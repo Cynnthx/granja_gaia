@@ -33,4 +33,8 @@ public class TokenAccesoService {
         // Guardar el token en la base de datos
         return tokenAccesoRepository.save(token);
     }
+
+    public void save(TokenAcceso token) {
+        tokenAccesoRepository.save(token);
+    }
 }

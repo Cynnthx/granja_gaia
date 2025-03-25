@@ -11,24 +11,26 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"cliente", "producto"})
+@EqualsAndHashCode(exclude = {"cliente", "evento"})
 public class Resena {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
-    @Column(name = "resena", nullable = false)
-    private String resena;
-    @Column(name = "valoracion", nullable = false)
-    private Integer valoracion;
-    @Column(name = "fecha", nullable = false, updatable = false)
-    private LocalDateTime fecha;
 
+    @Column(nullable = false)
+    private String resena;
+
+    @Column(nullable = false)
+    private Integer valoracion;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime fecha = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_producto", nullable = false)
-    private Producto producto;
+    @JoinColumn(name = "id_evento", nullable = false)
+    private Evento evento;
 }
