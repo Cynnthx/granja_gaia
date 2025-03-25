@@ -46,6 +46,7 @@ public class Usuario implements UserDetails {
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private TokenAcceso token;
 
+
     // Métodos de UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -115,4 +116,6 @@ public class Usuario implements UserDetails {
         //(este Usuario ahora tiene este token).
         this.token = token;
     }
+
+
 }

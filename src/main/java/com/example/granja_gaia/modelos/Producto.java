@@ -20,8 +20,8 @@ public class Producto {
     @Column(name="nombre", nullable = false, length = 100)
     private String nombre;
 
-    @Column(name="apellidos", nullable= false, length = 100)
-    private String apellidos;
+    @Column(name="descripcion", nullable= false, length = 100)
+    private String descripcion;
 
     @Column(name="precio", nullable = false)
     private Double precio;

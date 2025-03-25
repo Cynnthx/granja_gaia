@@ -19,7 +19,8 @@ public class InscripcionEvento {
     @Column(name = "id")
     private Integer id;
     @Column(name = "fecha_inscripcion", nullable = false, updatable = false)
-    private LocalDateTime fechaInscripcion;
+    // Inicializa el campo fechaInscripcion con la fecha y hora actual en el momento de la creación de la instancia.
+    private LocalDateTime fechaInscripcion = LocalDateTime.now();
 
 
     @ManyToOne(fetch = FetchType.LAZY)

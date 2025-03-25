@@ -20,16 +20,12 @@ public class Evento {
 
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
-
     @Column(name = "descripcion", nullable = false)
     private String descripcion;
-
     @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
-
     @Column(name = "capacidad", nullable = false)
     private Integer capacidad;
-
     @Column(name = "precio", nullable = false)
     private Double precio;
 
