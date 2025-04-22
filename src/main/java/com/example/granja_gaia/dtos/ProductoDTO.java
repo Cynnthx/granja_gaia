@@ -14,9 +14,10 @@ public class ProductoDTO {
     private String descripcion;
     private double precio;
     private String imagenUrl;
-    private String especificaciones;
     private int stock;
     private Integer idCategoria;
+    private String nombreCategoria;
+    private boolean esPopular; // Nuevo campo
 
     public ProductoDTO(Producto producto) {
         this.id = producto.getId();
@@ -24,8 +25,11 @@ public class ProductoDTO {
         this.descripcion = producto.getDescripcion();
         this.precio = producto.getPrecio();
         this.imagenUrl = producto.getImagenUrl();
-        this.especificaciones = producto.getEspecificaciones();
         this.stock = producto.getStock();
         this.idCategoria = producto.getCategoria().getId();
+        this.nombreCategoria = producto.getCategoria().getNombre();
+        this.esPopular = producto.getEsPopular();
     }
+
+
 }

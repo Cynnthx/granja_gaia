@@ -19,10 +19,6 @@ public class ClienteDTO {
     private String telefono;
     private Usuario usuario;
 
-    // Datos del Usuario
-    private String email;
-    private String nickname;
-
     // Constructor desde entidad Cliente
     public ClienteDTO(Cliente cliente) {
         this.id = cliente.getId();

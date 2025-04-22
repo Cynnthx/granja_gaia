@@ -1,9 +1,12 @@
 package com.example.granja_gaia.dtos;
 
 import com.example.granja_gaia.modelos.DetallesPedido;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
@@ -14,7 +17,8 @@ public class DetallesPedidoDTO {
     private String nombreProducto;
     private int cantidad;
     private double precioUnitario;
-    private double total; // (cantidad * precioUnitario)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Double total; // (cantidad * precioUnitario)
 
     // Constructor desde la entidad DetallesPedido
     public DetallesPedidoDTO(DetallesPedido detalles) {
