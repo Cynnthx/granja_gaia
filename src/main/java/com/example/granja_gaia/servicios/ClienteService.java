@@ -2,15 +2,20 @@ package com.example.granja_gaia.servicios;
 
 import com.example.granja_gaia.dtos.ClienteDTO;
 import com.example.granja_gaia.dtos.CrearClienteDTO;
+import com.example.granja_gaia.dtos.CrearUsuarioDTO;
 import com.example.granja_gaia.dtos.FotoDTO;
+import com.example.granja_gaia.enums.Rol;
 import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.modelos.Usuario;
 import com.example.granja_gaia.repositorios.ClienteRepository;
 import com.example.granja_gaia.repositorios.DetallesPedidoRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -19,6 +24,7 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final UsuarioService usuarioService;
     private final DetallesPedidoRepository detallesPedidoRepositorio;
+    private final PasswordEncoder passwordEncoder;
 
     // Método para obtener la imagen de perfil del cliente
     public FotoDTO getFotoById(Integer id) {
@@ -30,55 +36,87 @@ public class ClienteService {
     // Obtener todos los clientes
     public List<ClienteDTO> findAll() {
         return clienteRepository.findAll().stream()
-                .map(ClienteDTO::new)
-                .toList();
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private ClienteDTO convertToDto(Cliente cliente) {
+        ClienteDTO dto = new ClienteDTO();
+        dto.setId(cliente.getId());
+        dto.setNombre(cliente.getNombre());
+        dto.setApellidos(cliente.getApellidos());
+        dto.setDni(cliente.getDni());
+        dto.setDireccion(cliente.getDireccion());
+        dto.setTelefono(cliente.getTelefono());
+        dto.setFotoPerfil(cliente.getFotoPerfil());
+        return dto;
     }
 
     // Buscar cliente por ID
     public Optional<ClienteDTO> findById(Integer id) {
         return clienteRepository.findById(id)
-                .map(ClienteDTO::new);
+                .map(this::convertToDto);
     }
 
-    // Crear un nuevo cliente
-    public ClienteDTO createCliente(Cliente cliente) {
-        Cliente clienteGuardado = clienteRepository.save(cliente);
-        return new ClienteDTO(clienteGuardado);
+    // Crear un nuevo cliente y su usuario asociado
+    @Transactional
+    public ClienteDTO createCliente(CrearClienteDTO clienteDTO) {
+// 1. Crear DTO para el usuario
+        CrearUsuarioDTO usuarioDTO = new CrearUsuarioDTO();
+        usuarioDTO.setEmail(clienteDTO.getEmail());
+        usuarioDTO.setNickname(clienteDTO.getNickname());
+        usuarioDTO.setContrasena(clienteDTO.getContrasena());
+        usuarioDTO.setRol(clienteDTO.getRol());
+
+        // 2. Crear y guardar el usuario a través del servicio
+        Usuario usuario = usuarioService.crearUsuario(usuarioDTO);
+
+        // 3. Crear y guardar el cliente
+        Cliente cliente = clienteDTO.toEntity();
+        cliente.setUsuario(usuario);
+
+        return convertToDto(clienteRepository.save(cliente));
     }
 
     // Actualizar un cliente existente
-    public Optional<ClienteDTO> updateCliente(Integer id, Cliente clienteDetails) {
+    @Transactional
+    public Optional<ClienteDTO> updateCliente(Integer id, ClienteDTO clienteDTO) {
         return clienteRepository.findById(id)
-                .map(existingCliente -> {
-                    existingCliente.setNombre(clienteDetails.getNombre());
-                    existingCliente.setApellidos(clienteDetails.getApellidos());
-                    existingCliente.setDni(clienteDetails.getDni());
-                    existingCliente.setFotoPerfil(clienteDetails.getFotoPerfil());
-                    existingCliente.setDireccion(clienteDetails.getDireccion());
-                    existingCliente.setTelefono(clienteDetails.getTelefono());
-                    return new ClienteDTO(clienteRepository.save(existingCliente));
+                .map(clienteExistente -> {
+                    // Actualizar solo los campos permitidos
+                    clienteExistente.setNombre(clienteDTO.getNombre());
+                    clienteExistente.setApellidos(clienteDTO.getApellidos());
+                    clienteExistente.setDni(clienteDTO.getDni());
+                    clienteExistente.setFotoPerfil(clienteDTO.getFotoPerfil());
+                    clienteExistente.setDireccion(clienteDTO.getDireccion());
+                    clienteExistente.setTelefono(clienteDTO.getTelefono());
+
+                    Cliente clienteActualizado = clienteRepository.save(clienteExistente);
+                    return convertToDto(clienteActualizado);
                 });
     }
-
     // Eliminar un cliente
+    @Transactional
     public void deleteCliente(Integer id) {
-        clienteRepository.deleteById(id);
+        clienteRepository.findById(id).ifPresent(cliente -> {
+            usuarioService.deleteCliente(cliente.getUsuario().getId());
+            clienteRepository.delete(cliente);
+        });
     }
 
     // Obtener perfil completo del cliente
     public ClienteDTO getClientePerfil(Integer id) {
         Cliente cliente = clienteRepository.findByUsuarioId(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
-        Usuario usuario = cliente.getUsuario();
-
-        return new ClienteDTO(cliente);
-
+        return convertToDto(cliente);
     }
 
+    // Actualizar perfil del cliente
+    @Transactional
     public Optional<ClienteDTO> actualizarClientePerfil(Integer id, CrearClienteDTO clientePerfilDTO) {
         return clienteRepository.findByUsuarioId(id)
                 .map(cliente -> {
+                    // Actualizar datos del cliente
                     cliente.setFotoPerfil(clientePerfilDTO.getFotoPerfil());
                     cliente.setDni(clientePerfilDTO.getDni());
                     cliente.setNombre(clientePerfilDTO.getNombre());
@@ -86,14 +124,18 @@ public class ClienteService {
                     cliente.setDireccion(clientePerfilDTO.getDireccion());
                     cliente.setTelefono(clientePerfilDTO.getTelefono());
 
+                    // Actualizar datos del usuario
                     Usuario usuario = cliente.getUsuario();
-                    usuario.setEmail(clientePerfilDTO.getUsuario().getEmail());
-                    usuario.setNickname(clientePerfilDTO.getUsuario().getNickname());
-                    usuarioService.updateUsuario(usuario);
+                    usuario.setEmail(clientePerfilDTO.getEmail());
+                    usuario.setNickname(clientePerfilDTO.getNickname());
 
-                    return new ClienteDTO(clienteRepository.save(cliente));
+                    // Solo actualizar contraseña si se proporcionó una nueva
+                    if (clientePerfilDTO.getContrasena() != null && !clientePerfilDTO.getContrasena().isEmpty()) {
+                        usuario.setContrasena(passwordEncoder.encode(clientePerfilDTO.getContrasena()));
+                    }
+
+                    usuarioService.saveUsuario(usuario);
+                    return convertToDto(clienteRepository.save(cliente));
                 });
     }
-
-
 }

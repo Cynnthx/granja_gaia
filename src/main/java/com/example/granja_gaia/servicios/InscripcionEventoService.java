@@ -22,43 +22,55 @@ public class InscripcionEventoService {
     private final ClienteRepository clienteRepository;
     private final EventoRepository eventoRepository;
 
-    // Obtener todas las inscripciones
     public List<InscripcionEventoDTO> obtenerInscripciones() {
         return inscripcionEventoRepository.findAll().stream()
                 .map(InscripcionEventoDTO::new)
                 .collect(Collectors.toList());
     }
 
-    // Inscribir a un cliente en un evento
     public Optional<InscripcionEventoDTO> inscribirClienteEnEvento(Integer idCliente, Integer idEvento) {
         Optional<Cliente> clienteOpt = clienteRepository.findById(idCliente);
         Optional<Evento> eventoOpt = eventoRepository.findById(idEvento);
 
-        if (clienteOpt.isPresent() && eventoOpt.isPresent()) {
-            InscripcionEvento inscripcion = new InscripcionEvento();
-            inscripcion.setCliente(clienteOpt.get());
-            inscripcion.setEvento(eventoOpt.get());
-
-            return Optional.of(new InscripcionEventoDTO(inscripcionEventoRepository.save(inscripcion)));
+        if (clienteOpt.isEmpty() || eventoOpt.isEmpty()) {
+            return Optional.empty();
         }
-        return Optional.empty();
+
+        // Verificar si ya está inscrito
+        boolean yaInscrito = inscripcionEventoRepository
+                .existsByClienteIdAndEventoId(idCliente, idEvento);
+
+        if (yaInscrito) {
+            throw new IllegalStateException("El cliente ya está inscrito en este evento");
+        }
+
+        // Verificar capacidad del evento
+        Evento evento = eventoOpt.get();
+        long inscripcionesActuales = inscripcionEventoRepository.countByEventoId(idEvento);
+        if (inscripcionesActuales >= evento.getCapacidad()) {
+            throw new IllegalStateException("El evento ha alcanzado su capacidad máxima");
+        }
+
+        InscripcionEvento inscripcion = new InscripcionEvento();
+        inscripcion.setCliente(clienteOpt.get());
+        inscripcion.setEvento(evento);
+
+        return Optional.of(new InscripcionEventoDTO(
+                inscripcionEventoRepository.save(inscripcion)));
     }
 
-    // Obtener inscripciones de un cliente
     public List<InscripcionEventoDTO> obtenerInscripcionesPorCliente(Integer idCliente) {
         return inscripcionEventoRepository.findByClienteId(idCliente).stream()
                 .map(InscripcionEventoDTO::new)
                 .collect(Collectors.toList());
     }
 
-    // Obtener inscripciones de un evento
     public List<InscripcionEventoDTO> obtenerInscripcionesPorEvento(Integer idEvento) {
         return inscripcionEventoRepository.findByEventoId(idEvento).stream()
                 .map(InscripcionEventoDTO::new)
                 .collect(Collectors.toList());
     }
 
-    // Cancelar inscripción
     public void cancelarInscripcion(Integer id) {
         inscripcionEventoRepository.deleteById(id);
     }

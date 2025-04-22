@@ -21,43 +21,82 @@ public class PedidoService {
     private final ClienteRepository clienteRepository;
 
     /**
-     * Obtener el historial de pedidos de un cliente.
+     * Obtener todos los pedidos
      */
-    public List<PedidoDTO> obtenerHistorialPedidos(Integer idCliente) {
-        return pedidoRepository.findByClienteId(idCliente)
-                .stream()
-                .map(PedidoDTO::new)
+    public List<PedidoDTO> obtenerTodosLosPedidos() {
+        return pedidoRepository.findAll().stream()
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Crear un nuevo pedido con estado 'pendiente'.
+     * Obtener pedidos por cliente
+     * @param clienteId
+     * @return
      */
-    public PedidoDTO crearPedido(Integer idCliente) {
-        Cliente cliente = clienteRepository.findById(idCliente)
+    public List<PedidoDTO> obtenerPedidosPorCliente(Integer clienteId) {
+        return pedidoRepository.findByClienteId(clienteId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtener pedidos por rangos de fecha
+     * @param fechaInicio
+     * @param fechaFin
+     * @return
+     */
+    public List<PedidoDTO> obtenerPedidosPorFecha(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        return pedidoRepository.findByFechaBetween(fechaInicio, fechaFin).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtener un pedido por su id
+     * @param id
+     * @return
+     */
+    public PedidoDTO obtenerPedidoPorId(Integer id) {
+        return pedidoRepository.findById(id)
+                .map(this::convertToDto)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+    }
+
+    /**
+     * Crear un nuevo pedido
+     * @param clienteId
+     * @return
+     */
+    public PedidoDTO crearPedido(Integer clienteId) {
+        Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
         Pedido pedido = new Pedido();
         pedido.setFecha(LocalDateTime.now());
-        pedido.setTotal(0.0); // Inicialmente en 0, se actualizará con los detalles del pedido
+        pedido.setTotal(0.0);
         pedido.setEstado("pendiente");
         pedido.setCliente(cliente);
 
         Pedido pedidoGuardado = pedidoRepository.save(pedido);
-        return new PedidoDTO(pedidoGuardado);
+        return convertToDto(pedidoGuardado);
     }
 
     /**
-     * Editar un pedido (solo si está en estado 'pendiente').
+     * Actualizar el estado de un pedido
+     * @param id
+     * @param nuevoEstado
+     * @return
      */
-    public Optional<PedidoDTO> editarPedido(Integer idPedido, Pedido pedidoDetalles) {
-        return pedidoRepository.findById(idPedido)
-                .filter(p -> p.getEstado().equals("pendiente")) // Solo permite edición si está pendiente
-                .map(pedido -> {
-                    pedido.setTotal(pedidoDetalles.getTotal());
-                    return new PedidoDTO(pedidoRepository.save(pedido));
-                });
+    public PedidoDTO actualizarEstadoPedido(Integer id, String nuevoEstado) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+
+        pedido.setEstado(nuevoEstado);
+        Pedido pedidoActualizado = pedidoRepository.save(pedido);
+        return convertToDto(pedidoActualizado);
     }
+
 
     /**
      * Eliminar un pedido (solo si está en estado 'pendiente').
@@ -68,15 +107,16 @@ public class PedidoService {
                 .ifPresent(pedidoRepository::delete);
     }
 
-    /**
-     * Cambiar el estado de un pedido a 'enviado'.
-     */
-    public Optional<PedidoDTO> marcarPedidoComoEnviado(Integer idPedido) {
-        return pedidoRepository.findById(idPedido)
-                .filter(p -> p.getEstado().equals("pendiente")) // Solo permite cambiar estado si es pendiente
-                .map(pedido -> {
-                    pedido.setEstado("enviado");
-                    return new PedidoDTO(pedidoRepository.save(pedido));
-                });
+
+    // Método privado para convertir Pedido a DTO
+    private PedidoDTO convertToDto(Pedido pedido) {
+        return PedidoDTO.builder()
+                .id(pedido.getId())
+                .fecha(pedido.getFecha())
+                .estado(pedido.getEstado())
+                .total(pedido.getTotal())
+                .usuarioId(pedido.getCliente().getId())
+                .nombreUsuario(pedido.getCliente().getNombre())
+                .build();
     }
 }
