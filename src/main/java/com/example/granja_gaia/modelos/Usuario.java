@@ -30,9 +30,8 @@ public class Usuario implements UserDetails {
     @NotEmpty(message = "El nickname no puede estar vacío")
     private String nickname;
 
-    @Column(name = "rol", nullable = false)
     @Enumerated(EnumType.STRING) // Mejor usar STRING para legibilidad
-    @NotNull(message = "El rol no puede ser nulo")
+    @Column(name = "rol", nullable = false)
     private Rol rol;
 
     @Column(name = "email", nullable = false, unique = true)

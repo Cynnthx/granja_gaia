@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = {"usuario"})
+@Builder
 public class Cliente {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
