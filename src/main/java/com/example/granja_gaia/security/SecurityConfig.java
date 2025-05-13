@@ -9,13 +9,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -31,25 +32,46 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(
-                            "/api/usuarios/registro/cliente",
-                            "/api/usuarios/login",
-                            "/swagger-ui/**",
-                            "/v3/api-docs/**",
-                            "/api-docs/**",
-                            "/api/clientes/**",
-                            "/api/usuarios/registro/admin" // temporal
-                    ).permitAll();
+                .authorizeHttpRequests(auth -> auth
+                        // Rutas públicas
+                        .requestMatchers(
+                                "/api/usuarios/login",
+                                "/api/usuarios/registro/cliente",
+                                "/api/usuarios/registro/admin",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/api/eventos/all",
+                                "/api/eventos/**",
+                                "/api/productos/listar",
+                                "/api/productos/populares",
+                                "/api/productos/**",
+                                "/api/categorias"
+                        ).permitAll()
 
-                    //CREAR LUEGO CUANDO CONECTE EL FRONTEND, AUTORIZACIONES SOLO ADMIN
-//                            .requestMatchers("/api/clientes/**").hasAnyAuthority("admin");
+                        // Rutas protegidas para clientes autenticados
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/perfil").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/clientes/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/usuario/**").authenticated()
 
 
+                        // Rutas protegidas para administradores
+                        .requestMatchers("/api/admin/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/clientes").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.POST, "/api/eventos/crear").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.PUT, "/api/eventos/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.DELETE, "/api/eventos/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.POST, "/api/productos/crear").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.PATCH, "/api/productos/**/popular").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/inscripciones-eventos/all").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.DELETE, "/api/inscripciones-eventos/**").hasAuthority("admin")
 
-                    // Todos los demás endpoints requieren autenticación
-                    auth.anyRequest().authenticated();
-                })
+                        // Todo lo demás requiere autenticación
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
@@ -61,13 +83,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",    // Angular
-                "http://localhost:3000",   // React
-                "http://localhost:8080"     // Spring Boot
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 
@@ -75,4 +93,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+
 }

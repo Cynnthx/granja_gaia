@@ -26,12 +26,14 @@ public class ClienteService {
     private final DetallesPedidoRepository detallesPedidoRepositorio;
     private final PasswordEncoder passwordEncoder;
 
+
+
     // Método para obtener la imagen de perfil del cliente
-    public FotoDTO getFotoById(Integer id) {
-        Cliente cliente = clienteRepository.findByUsuarioId(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado para el usuario ID: " + id));
-        return new FotoDTO(cliente.getFotoPerfil());
-    }
+//    public FotoDTO getFotoById(Integer id) {
+//        Cliente cliente = clienteRepository.findByUsuarioId(id)
+//                .orElseThrow(() -> new RuntimeException("Cliente no encontrado para el usuario ID: " + id));
+//        return new FotoDTO(cliente.getFotoPerfil());
+//    }
 
     // Obtener todos los clientes
     public List<ClienteDTO> findAll() {
@@ -56,6 +58,21 @@ public class ClienteService {
     public Optional<ClienteDTO> findById(Integer id) {
         return clienteRepository.findById(id)
                 .map(this::convertToDto);
+    }
+
+
+    //Buscar cliente a partir de usuarioId a Id
+    public ClienteDTO findClienteIdByUsuarioId(Integer usuarioId) {
+
+
+        Cliente c  =clienteRepository.findTopByUsuarioId(usuarioId).orElse(null);
+
+        if (c != null) {
+            return convertToDto(c);
+        } else {
+            return null;
+        }
+
     }
 
     // Crear un nuevo cliente y su usuario asociado
@@ -104,38 +121,38 @@ public class ClienteService {
         });
     }
 
-    // Obtener perfil completo del cliente
-    public ClienteDTO getClientePerfil(Integer id) {
-        Cliente cliente = clienteRepository.findByUsuarioId(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return convertToDto(cliente);
-    }
-
-    // Actualizar perfil del cliente
-    @Transactional
-    public Optional<ClienteDTO> actualizarClientePerfil(Integer id, CrearClienteDTO clientePerfilDTO) {
-        return clienteRepository.findByUsuarioId(id)
-                .map(cliente -> {
-                    // Actualizar datos del cliente
-                    cliente.setFotoPerfil(clientePerfilDTO.getFotoPerfil());
-                    cliente.setDni(clientePerfilDTO.getDni());
-                    cliente.setNombre(clientePerfilDTO.getNombre());
-                    cliente.setApellidos(clientePerfilDTO.getApellidos());
-                    cliente.setDireccion(clientePerfilDTO.getDireccion());
-                    cliente.setTelefono(clientePerfilDTO.getTelefono());
-
-                    // Actualizar datos del usuario
-                    Usuario usuario = cliente.getUsuario();
-                    usuario.setEmail(clientePerfilDTO.getEmail());
-                    usuario.setNickname(clientePerfilDTO.getNickname());
-
-                    // Solo actualizar contraseña si se proporcionó una nueva
-                    if (clientePerfilDTO.getContrasena() != null && !clientePerfilDTO.getContrasena().isEmpty()) {
-                        usuario.setContrasena(passwordEncoder.encode(clientePerfilDTO.getContrasena()));
-                    }
-
-                    usuarioService.saveUsuario(usuario);
-                    return convertToDto(clienteRepository.save(cliente));
-                });
-    }
+//    // Obtener perfil completo del cliente
+//    public ClienteDTO getClientePerfil(Integer id) {
+//        Cliente cliente = clienteRepository.findByUsuarioId(id)
+//                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+//        return convertToDto(cliente);
+//    }
+//
+//    // Actualizar perfil del cliente
+//    @Transactional
+//    public Optional<ClienteDTO> actualizarClientePerfil(Integer id, CrearClienteDTO clientePerfilDTO) {
+//        return clienteRepository.findByUsuarioId(id)
+//                .map(cliente -> {
+//                    // Actualizar datos del cliente
+//                    cliente.setFotoPerfil(clientePerfilDTO.getFotoPerfil());
+//                    cliente.setDni(clientePerfilDTO.getDni());
+//                    cliente.setNombre(clientePerfilDTO.getNombre());
+//                    cliente.setApellidos(clientePerfilDTO.getApellidos());
+//                    cliente.setDireccion(clientePerfilDTO.getDireccion());
+//                    cliente.setTelefono(clientePerfilDTO.getTelefono());
+//
+//                    // Actualizar datos del usuario
+//                    Usuario usuario = cliente.getUsuario();
+//                    usuario.setEmail(clientePerfilDTO.getEmail());
+//                    usuario.setNickname(clientePerfilDTO.getNickname());
+//
+//                    // Solo actualizar contraseña si se proporcionó una nueva
+//                    if (clientePerfilDTO.getContrasena() != null && !clientePerfilDTO.getContrasena().isEmpty()) {
+//                        usuario.setContrasena(passwordEncoder.encode(clientePerfilDTO.getContrasena()));
+//                    }
+//
+//                    usuarioService.saveUsuario(usuario);
+//                    return convertToDto(clienteRepository.save(cliente));
+//                });
+//    }
 }

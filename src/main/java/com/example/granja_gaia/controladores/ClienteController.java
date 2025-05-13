@@ -2,6 +2,7 @@ package com.example.granja_gaia.controladores;
 
 import com.example.granja_gaia.dtos.ClienteDTO;
 import com.example.granja_gaia.dtos.CrearClienteDTO;
+import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.servicios.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,13 @@ public class ClienteController {
         return cliente.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    // Obtener cliente por usuarioId a Id
+    @GetMapping("/usuario/{usuarioId}")
+    public ClienteDTO findClienteIdByUsuarioId(@PathVariable Integer usuarioId) {
+        return clienteService.findClienteIdByUsuarioId(usuarioId);
+    }
+
 
     // Crear un nuevo cliente
     @PostMapping("/crear")
