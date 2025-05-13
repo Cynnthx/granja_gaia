@@ -30,8 +30,8 @@ public class Usuario implements UserDetails {
     @NotEmpty(message = "El nickname no puede estar vacío")
     private String nickname;
 
-    @Enumerated(EnumType.STRING) // Mejor usar STRING para legibilidad
-    @Column(name = "rol", nullable = false)
+    @Enumerated(EnumType.ORDINAL) // Mejor usar STRING para legibilidad
+    @Column(columnDefinition = "rol", nullable = false)
     private Rol rol;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -42,8 +42,14 @@ public class Usuario implements UserDetails {
     @NotEmpty(message = "La contraseña no puede estar vacía")
     private String contrasena;
 
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "usuario_id", nullable = false)
+//    private Usuario usuario;
+
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private TokenAcceso token;
+
+
 
 
     // Métodos de UserDetails

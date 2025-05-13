@@ -11,11 +11,13 @@ import com.example.granja_gaia.repositorios.PedidoRepository;
 import com.example.granja_gaia.security.JwtService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -57,7 +59,6 @@ public class UsuarioService {
                 usuario.getEmail(), usuario.getNickname(), cliente.getNombre() + " " + cliente.getApellidos());
     }
 
-    // Registro de administrador con validación
     public AuthenticationDTO registrarAdmin(AdminDTO registroDTO) {
         if (usuarioRepository.existsByEmail(registroDTO.getEmail())) {
             return AuthenticationDTO.crearError("El email ya está en uso");
@@ -70,16 +71,46 @@ public class UsuarioService {
         usuario.setEmail(registroDTO.getEmail());
         usuario.setNickname(registroDTO.getNickname());
         usuario.setContrasena(passwordEncoder.encode(registroDTO.getContrasena()));
-        usuario.setRol(Rol.admin);
+        usuario.setRol(Rol.admin); // El converter se encargará de la conversión
 
-        usuarioRepository.save(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        // Generar token automáticamente al registrar
-        String token = jwtService.generateToken(usuario);
+        String token = jwtService.generateToken(usuarioGuardado);
 
-        return AuthenticationDTO.crearExito(token, usuario.getId(), usuario.getRol().name(),
-                usuario.getEmail(), usuario.getNickname(), null);
+        return AuthenticationDTO.crearExito(
+                token,
+                usuarioGuardado.getId(),
+                usuarioGuardado.getRol().name(), // Esto devolverá "admin" en mayúsculas
+                usuarioGuardado.getEmail(),
+                usuarioGuardado.getNickname(),
+                null
+        );
     }
+
+//    // Registro de administrador con validación
+//    public AuthenticationDTO registrarAdmin(AdminDTO registroDTO) {
+//        if (usuarioRepository.existsByEmail(registroDTO.getEmail())) {
+//            return AuthenticationDTO.crearError("El email ya está en uso");
+//        }
+//        if (usuarioRepository.existsByNickname(registroDTO.getNickname())) {
+//            return AuthenticationDTO.crearError("El nickname ya está en uso");
+//        }
+//
+//        Usuario usuario = new Usuario();
+//        usuario.setEmail(registroDTO.getEmail());
+//        usuario.setNickname(registroDTO.getNickname());
+//        usuario.setContrasena(passwordEncoder.encode(registroDTO.getContrasena()));
+//        usuario.setRol(Rol.admin);
+//
+//        usuarioRepository.save(usuario);
+//
+//        // Generar token automáticamente al registrar
+//        String token = jwtService.generateToken(usuario);
+//
+//        return AuthenticationDTO.crearExito(token, usuario.getId(), usuario.getRol().name(),
+//                usuario.getEmail(), usuario.getNickname(), null);
+//    }
+
 
     // Login de usuario mejorado
     public AuthenticationDTO login(LoginRequestDTO loginRequest) {
