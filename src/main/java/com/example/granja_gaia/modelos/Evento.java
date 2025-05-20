@@ -28,6 +28,8 @@ public class Evento {
     private Integer capacidad;
     @Column(name = "precio", nullable = false)
     private Double precio;
+    @Column(name = "imagen", nullable = false)
+    private String imagen;
 
     @Override
     public String toString() {
@@ -38,6 +40,8 @@ public class Evento {
                 ", fecha=" + fecha +
                 ", capacidad=" + capacidad +
                 ", precio=" + precio +
+                ", imagen=" + imagen +
+
                 '}';
     }
 }

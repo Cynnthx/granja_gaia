@@ -1,5 +1,6 @@
 package com.example.granja_gaia.modelos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = {"usuario"})
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Cliente {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

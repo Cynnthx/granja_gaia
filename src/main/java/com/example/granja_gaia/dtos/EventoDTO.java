@@ -17,6 +17,7 @@ public class EventoDTO {
     private LocalDate fecha;
     private Integer capacidad;
     private Double precio;
+    private String imagen;
 
     public EventoDTO(Evento evento) {
         this.id = evento.getId();
@@ -25,5 +26,6 @@ public class EventoDTO {
         this.fecha = evento.getFecha();
         this.capacidad = evento.getCapacidad();
         this.precio = evento.getPrecio();
+        this.imagen = evento.getImagen();
     }
 }

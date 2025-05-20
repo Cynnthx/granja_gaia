@@ -56,7 +56,7 @@ public class UsuarioService {
         String token = jwtService.generateToken(usuario);
 
         return AuthenticationDTO.crearExito(token, usuario.getId(), usuario.getRol().name(),
-                usuario.getEmail(), usuario.getNickname(), cliente.getNombre() + " " + cliente.getApellidos());
+                usuario.getEmail(), usuario.getNickname(), cliente.getNombre() + " " + cliente.getApellidos(), cliente.getId());
     }
 
     public AuthenticationDTO registrarAdmin(AdminDTO registroDTO) {
@@ -83,6 +83,7 @@ public class UsuarioService {
                 usuarioGuardado.getRol().name(), // Esto devolverá "admin" en mayúsculas
                 usuarioGuardado.getEmail(),
                 usuarioGuardado.getNickname(),
+                null,
                 null
         );
     }
@@ -129,11 +130,14 @@ public class UsuarioService {
             if (clienteOpt.isPresent()) {
                 Cliente cliente = clienteOpt.get();
                 nombreCompleto = cliente.getNombre() + " " + cliente.getApellidos();
+
+                return AuthenticationDTO.crearExito(token, usuario.getId(), usuario.getRol().name(),
+                        usuario.getEmail(), usuario.getNickname(), nombreCompleto, cliente.getId());
             }
         }
 
         return AuthenticationDTO.crearExito(token, usuario.getId(), usuario.getRol().name(),
-                usuario.getEmail(), usuario.getNickname(), nombreCompleto);
+                usuario.getEmail(), usuario.getNickname(), nombreCompleto, null);
     }
 
     // Obtener perfil del usuario autenticado

@@ -11,4 +11,6 @@ public class AdminDTO {
     private String nickname;
     private String email;
     private String contrasena;
+
+
 }

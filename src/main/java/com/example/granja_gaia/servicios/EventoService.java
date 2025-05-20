@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,6 +47,7 @@ public class EventoService {
                     evento.setFecha(eventoDetalles.getFecha());
                     evento.setCapacidad(eventoDetalles.getCapacidad());
                     evento.setPrecio(eventoDetalles.getPrecio());
+                    evento.setImagen(eventoDetalles.getImagen());
                     return new EventoDTO(eventoRepository.save(evento));
                 });
     }
@@ -71,7 +71,8 @@ public class EventoService {
                             evento.getDescripcion(),
                             evento.getFecha(),
                             evento.getCapacidad(),
-                            evento.getPrecio()
+                            evento.getPrecio(),
+                            evento.getImagen()
                     );
                 })
                 .collect(Collectors.toList());

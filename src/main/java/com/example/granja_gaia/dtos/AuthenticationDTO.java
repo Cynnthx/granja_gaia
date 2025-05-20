@@ -20,10 +20,11 @@ public class AuthenticationDTO {
     private String email;          // Email del usuario
     private String nickname;       // Nombre de usuario
     private String nombreCompleto; // Nombre + apellido (solo clientes)
+    private Integer clienteId;
 
     // Métodos helpers
     public static AuthenticationDTO crearExito(String token, Integer id, String rol,
-                                               String email, String nickname, String nombreCompleto) {
+                                               String email, String nickname, String nombreCompleto, Integer clienteId) {
         return builder()
                 .token(token)
                 .mensaje("Éxito")
@@ -32,6 +33,7 @@ public class AuthenticationDTO {
                 .email(email)
                 .nickname(nickname)
                 .nombreCompleto(nombreCompleto)
+                .clienteId(clienteId)
                 .build();
     }
 

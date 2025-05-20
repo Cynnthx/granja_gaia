@@ -9,8 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -46,19 +44,20 @@ public class SecurityConfig {
                                 "/api/productos/listar",
                                 "/api/productos/populares",
                                 "/api/productos/**",
-                                "/api/categorias"
+                                "/api/categorias/listar"
                         ).permitAll()
 
                         // Rutas protegidas para clientes autenticados
                         .requestMatchers(HttpMethod.GET, "/api/clientes/perfil").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/clientes/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/clientes/usuario/**").authenticated()
-
+                        .requestMatchers(HttpMethod.GET, "/api/carrito/pedido/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/carrito/detalle/**").authenticated()
 
                         // Rutas protegidas para administradores
                         .requestMatchers("/api/admin/**").hasAuthority("admin")
                         .requestMatchers(HttpMethod.GET, "/api/clientes").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAuthority("admin")
+                        .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAuthority("admin")  // Solo admin
                         .requestMatchers(HttpMethod.POST, "/api/eventos/crear").hasAuthority("admin")
                         .requestMatchers(HttpMethod.PUT, "/api/eventos/**").hasAuthority("admin")
                         .requestMatchers(HttpMethod.DELETE, "/api/eventos/**").hasAuthority("admin")
@@ -69,11 +68,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/inscripciones-eventos/all").hasAuthority("admin")
                         .requestMatchers(HttpMethod.DELETE, "/api/inscripciones-eventos/**").hasAuthority("admin")
 
-                        // Todo lo demás requiere autenticación
+                        // Cualquier otra petición requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -93,6 +93,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-
 }

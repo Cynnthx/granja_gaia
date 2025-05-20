@@ -4,6 +4,7 @@ import com.example.granja_gaia.dtos.ClienteDTO;
 import com.example.granja_gaia.dtos.CrearClienteDTO;
 import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.servicios.ClienteService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,11 +50,10 @@ public class ClienteController {
     }
 
     // Actualizar un cliente existente
-    @PutMapping("/{id}")
-    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Integer id, @RequestBody ClienteDTO clienteDTO) {
-        Optional<ClienteDTO> updatedCliente = clienteService.updateCliente(id, clienteDTO);
-        return updatedCliente.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @PutMapping("/{clienteId}")
+    public ClienteDTO editarCliente(@PathVariable Integer clienteId, @RequestBody @Valid ClienteDTO dto) throws Exception {
+        ClienteDTO clienteDTO = clienteService.updateCliente(clienteId, dto);
+        return clienteDTO;
     }
 
     // Eliminar un cliente por su ID

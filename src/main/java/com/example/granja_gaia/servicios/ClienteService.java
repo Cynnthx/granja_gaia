@@ -9,6 +9,8 @@ import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.modelos.Usuario;
 import com.example.granja_gaia.repositorios.ClienteRepository;
 import com.example.granja_gaia.repositorios.DetallesPedidoRepository;
+import com.example.granja_gaia.repositorios.UsuarioRepository;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class ClienteService {
     private final UsuarioService usuarioService;
     private final DetallesPedidoRepository detallesPedidoRepositorio;
     private final PasswordEncoder passwordEncoder;
-
+    private final UsuarioRepository usuarioRepository;
 
 
     // Método para obtener la imagen de perfil del cliente
@@ -95,23 +97,23 @@ public class ClienteService {
         return convertToDto(clienteRepository.save(cliente));
     }
 
-    // Actualizar un cliente existente
-    @Transactional
-    public Optional<ClienteDTO> updateCliente(Integer id, ClienteDTO clienteDTO) {
-        return clienteRepository.findById(id)
-                .map(clienteExistente -> {
-                    // Actualizar solo los campos permitidos
-                    clienteExistente.setNombre(clienteDTO.getNombre());
-                    clienteExistente.setApellidos(clienteDTO.getApellidos());
-                    clienteExistente.setDni(clienteDTO.getDni());
-                    clienteExistente.setFotoPerfil(clienteDTO.getFotoPerfil());
-                    clienteExistente.setDireccion(clienteDTO.getDireccion());
-                    clienteExistente.setTelefono(clienteDTO.getTelefono());
-
-                    Cliente clienteActualizado = clienteRepository.save(clienteExistente);
-                    return convertToDto(clienteActualizado);
-                });
-    }
+//    // Actualizar un cliente existente
+//    @Transactional
+//    public Optional<ClienteDTO> updateCliente(Integer id, ClienteDTO clienteDTO) {
+//        return clienteRepository.findById(id)
+//                .map(clienteExistente -> {
+//                    // Actualizar solo los campos permitidos
+//                    clienteExistente.setNombre(clienteDTO.getNombre());
+//                    clienteExistente.setApellidos(clienteDTO.getApellidos());
+//                    clienteExistente.setDni(clienteDTO.getDni());
+//                    clienteExistente.setFotoPerfil(clienteDTO.getFotoPerfil());
+//                    clienteExistente.setDireccion(clienteDTO.getDireccion());
+//                    clienteExistente.setTelefono(clienteDTO.getTelefono());
+//
+//                    Cliente clienteActualizado = clienteRepository.save(clienteExistente);
+//                    return convertToDto(clienteActualizado);
+//                });
+//    }
     // Eliminar un cliente
     @Transactional
     public void deleteCliente(Integer id) {
@@ -121,6 +123,50 @@ public class ClienteService {
         });
     }
 
+    /**
+     * Este método edita un perfil de cliente existente
+     *
+     * @param clienteId
+     * @param dto
+     * @return ClienteDTO
+     * @throws Exception
+     */
+    public ClienteDTO updateCliente(Integer clienteId, @Valid ClienteDTO dto) throws Exception {
+
+        // Buscar al cliente por su ID
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new Exception("Cliente no encontrado"));
+
+
+        // Validar el DNI
+        if (dto.getDni() != null && dto.getDni().length() != 9) {
+            throw new Exception("El DNI introducido no es válido");
+        }
+
+        // Actualizar los datos del cliente
+        if (dto.getDni() != null) {
+            cliente.setDni(dto.getDni());
+        }
+        if (dto.getFotoPerfil() != null) {
+            cliente.setFotoPerfil(dto.getFotoPerfil());
+        }
+        if (dto.getDireccion() != null) {
+            cliente.setDireccion(dto.getDireccion());
+        }
+        if (dto.getTelefono() != null) {
+            cliente.setTelefono(dto.getTelefono());
+        }
+
+
+        // Guardar los cambios en el cliente y el usuario
+        usuarioRepository.save(cliente.getUsuario());
+        Cliente clienteGuardado = clienteRepository.save(cliente);
+
+        // Crear y devolver el ClienteDTO actualizado
+        return new ClienteDTO(clienteGuardado);
+    }
+
+
 //    // Obtener perfil completo del cliente
 //    public ClienteDTO getClientePerfil(Integer id) {
 //        Cliente cliente = clienteRepository.findByUsuarioId(id)
@@ -128,31 +174,5 @@ public class ClienteService {
 //        return convertToDto(cliente);
 //    }
 //
-//    // Actualizar perfil del cliente
-//    @Transactional
-//    public Optional<ClienteDTO> actualizarClientePerfil(Integer id, CrearClienteDTO clientePerfilDTO) {
-//        return clienteRepository.findByUsuarioId(id)
-//                .map(cliente -> {
-//                    // Actualizar datos del cliente
-//                    cliente.setFotoPerfil(clientePerfilDTO.getFotoPerfil());
-//                    cliente.setDni(clientePerfilDTO.getDni());
-//                    cliente.setNombre(clientePerfilDTO.getNombre());
-//                    cliente.setApellidos(clientePerfilDTO.getApellidos());
-//                    cliente.setDireccion(clientePerfilDTO.getDireccion());
-//                    cliente.setTelefono(clientePerfilDTO.getTelefono());
-//
-//                    // Actualizar datos del usuario
-//                    Usuario usuario = cliente.getUsuario();
-//                    usuario.setEmail(clientePerfilDTO.getEmail());
-//                    usuario.setNickname(clientePerfilDTO.getNickname());
-//
-//                    // Solo actualizar contraseña si se proporcionó una nueva
-//                    if (clientePerfilDTO.getContrasena() != null && !clientePerfilDTO.getContrasena().isEmpty()) {
-//                        usuario.setContrasena(passwordEncoder.encode(clientePerfilDTO.getContrasena()));
-//                    }
-//
-//                    usuarioService.saveUsuario(usuario);
-//                    return convertToDto(clienteRepository.save(cliente));
-//                });
-//    }
+
 }
