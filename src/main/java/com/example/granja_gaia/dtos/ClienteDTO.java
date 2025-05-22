@@ -2,6 +2,7 @@ package com.example.granja_gaia.dtos;
 
 import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.modelos.Usuario;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class ClienteDTO {
     private String fotoPerfil;
     private String direccion;
     private String telefono;
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Usuario usuario;
 
     // Constructor desde entidad Cliente

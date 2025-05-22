@@ -31,7 +31,39 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    // Registro de cliente con validación de email y nickname únicos
+    // Método para validar DNI/NIE
+    public boolean esDniNieValido(String dniNie) {
+        if (dniNie == null || dniNie.isBlank()) return false;
+
+        String letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+        dniNie = dniNie.toUpperCase().trim();
+
+        // NIE: sustituir letra inicial por número
+        if (dniNie.matches("^[XYZ]\\d{7}[A-Z]$")) {
+            char letraInicial = dniNie.charAt(0);
+            String numero = switch (letraInicial) {
+                case 'X' -> "0";
+                case 'Y' -> "1";
+                case 'Z' -> "2";
+                default -> throw new IllegalStateException("Letra NIE inválida");
+            };
+            numero += dniNie.substring(1, 8);
+            int resto = Integer.parseInt(numero) % 23;
+            return dniNie.charAt(8) == letras.charAt(resto);
+        }
+
+        // DNI normal
+        if (dniNie.matches("^\\d{8}[A-Z]$")) {
+            int numero = Integer.parseInt(dniNie.substring(0, 8));
+            int resto = numero % 23;
+            return dniNie.charAt(8) == letras.charAt(resto);
+        }
+
+        return false;
+    }
+
+
+    // Registro de cliente con validación
     public AuthenticationDTO registrarCliente(CrearClienteDTO registroDTO) {
         if (usuarioRepository.existsByEmail(registroDTO.getEmail())) {
             return AuthenticationDTO.crearError("El email ya está en uso");
@@ -47,6 +79,10 @@ public class UsuarioService {
         usuario.setRol(Rol.cliente);
 
         usuarioRepository.save(usuario);
+
+        if (!esDniNieValido(registroDTO.getDni())) {
+            return AuthenticationDTO.crearError("DNI o NIE no válido.");
+        }
 
         Cliente cliente = registroDTO.toEntity();
         cliente.setUsuario(usuario);
@@ -180,6 +216,12 @@ public class UsuarioService {
         cliente.setDireccion(perfilRequest.getDireccion());
         cliente.setTelefono(perfilRequest.getTelefono());
         cliente.setFotoPerfil(perfilRequest.getFotoPerfil());
+
+        if (!esDniNieValido(perfilRequest.getDni())) {
+            throw new IllegalArgumentException("DNI o NIE no válido.");
+        }
+        cliente.setDni(perfilRequest.getDni());
+
 
         // 3. Guardar cambios
         Cliente clienteActualizado = clienteRepository.save(cliente);

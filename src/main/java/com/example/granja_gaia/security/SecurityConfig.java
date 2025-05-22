@@ -54,10 +54,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/carrito/pedido/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/carrito/detalle/**").authenticated()
 
+
                         // Rutas protegidas para administradores
                         .requestMatchers("/api/admin/**").hasAuthority("admin")
                         .requestMatchers(HttpMethod.GET, "/api/clientes").hasAuthority("admin")
-                        .requestMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAuthority("admin")  // Solo admin
+                        //.requestMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAuthority("admin")  // Solo admin
                         .requestMatchers(HttpMethod.POST, "/api/eventos/crear").hasAuthority("admin")
                         .requestMatchers(HttpMethod.PUT, "/api/eventos/**").hasAuthority("admin")
                         .requestMatchers(HttpMethod.DELETE, "/api/eventos/**").hasAuthority("admin")
