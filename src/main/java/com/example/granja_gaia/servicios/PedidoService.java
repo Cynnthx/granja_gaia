@@ -24,7 +24,7 @@ public class PedidoService {
      * Obtener todos los pedidos
      */
     public List<PedidoDTO> obtenerTodosLosPedidos() {
-        return pedidoRepository.findAll().stream()
+        return pedidoRepository.findAllOrders().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -35,7 +35,7 @@ public class PedidoService {
      * @return
      */
     public List<PedidoDTO> obtenerPedidosPorCliente(Integer clienteId) {
-        return pedidoRepository.findByClienteId(clienteId).stream()
+        return pedidoRepository.findByClienteOrders(clienteId).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
