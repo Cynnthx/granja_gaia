@@ -4,14 +4,20 @@ import com.example.granja_gaia.dtos.ClienteDTO;
 import com.example.granja_gaia.dtos.CrearClienteDTO;
 import com.example.granja_gaia.modelos.Cliente;
 import com.example.granja_gaia.servicios.ClienteService;
+import jakarta.validation.Path;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -62,4 +68,7 @@ public class ClienteController {
         clienteService.deleteCliente(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+
+
 }
