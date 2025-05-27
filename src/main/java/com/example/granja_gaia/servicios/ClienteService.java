@@ -30,12 +30,6 @@ public class ClienteService {
     private final UsuarioRepository usuarioRepository;
 
 
-    // Método para obtener la imagen de perfil del cliente
-//    public FotoDTO getFotoById(Integer id) {
-//        Cliente cliente = clienteRepository.findByUsuarioId(id)
-//                .orElseThrow(() -> new RuntimeException("Cliente no encontrado para el usuario ID: " + id));
-//        return new FotoDTO(cliente.getFotoPerfil());
-//    }
 
     // Obtener todos los clientes
     public List<ClienteDTO> findAll() {
@@ -97,23 +91,7 @@ public class ClienteService {
         return convertToDto(clienteRepository.save(cliente));
     }
 
-//    // Actualizar un cliente existente
-//    @Transactional
-//    public Optional<ClienteDTO> updateCliente(Integer id, ClienteDTO clienteDTO) {
-//        return clienteRepository.findById(id)
-//                .map(clienteExistente -> {
-//                    // Actualizar solo los campos permitidos
-//                    clienteExistente.setNombre(clienteDTO.getNombre());
-//                    clienteExistente.setApellidos(clienteDTO.getApellidos());
-//                    clienteExistente.setDni(clienteDTO.getDni());
-//                    clienteExistente.setFotoPerfil(clienteDTO.getFotoPerfil());
-//                    clienteExistente.setDireccion(clienteDTO.getDireccion());
-//                    clienteExistente.setTelefono(clienteDTO.getTelefono());
-//
-//                    Cliente clienteActualizado = clienteRepository.save(clienteExistente);
-//                    return convertToDto(clienteActualizado);
-//                });
-//    }
+
     // Eliminar un cliente
     @Transactional
     public void deleteCliente(Integer id) {
@@ -167,12 +145,6 @@ public class ClienteService {
     }
 
 
-//    // Obtener perfil completo del cliente
-//    public ClienteDTO getClientePerfil(Integer id) {
-//        Cliente cliente = clienteRepository.findByUsuarioId(id)
-//                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-//        return convertToDto(cliente);
-//    }
-//
+
 
 }
